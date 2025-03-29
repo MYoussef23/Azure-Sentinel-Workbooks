@@ -1,0 +1,887 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "# User Analytics and Discovery"
+      },
+      "name": "text - 2"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Section 1: User Idenity Information"
+      },
+      "name": "text - 20"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "7d0ab0d4-beba-4767-b740-793e35131fcf",
+            "version": "KqlParameterItem/1.0",
+            "name": "AccountUPN",
+            "label": "Enter User Principal Name",
+            "type": 1,
+            "isRequired": true,
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "value": ""
+          }
+        ],
+        "style": "pills",
+        "title": "User Identity Information",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "parameters - 0"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let UserInput = \"{AccountUPN}\";\nIdentityInfo\n| extend UserPrincipalName = AccountUPN\n| extend UserDisplayName = AccountDisplayName\n| where UserPrincipalName =~ UserInput\n| summarize by UserDisplayName, UserPrincipalName, IsAccountEnabled, MailAddress, Manager, Department, JobTitle\n| sort by UserDisplayName asc",
+        "size": 4,
+        "timeContext": {
+          "durationMs": 2592000000
+        },
+        "exportFieldName": "UserPrincipalName",
+        "exportParameterName": "UserPrincipalName",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "query - 2"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let UserInput = \"{AccountUPN}\"; \r\nIdentityInfo\r\n| extend UserPrincipalName = AccountUPN\r\n| extend UserDisplayName = AccountDisplayName\r\n| where UserPrincipalName contains UserInput  // Ensure the same filtering method\r\n| project GroupMembership // Retain relevant fields\r\n| mvexpand GroupMembership",
+        "size": 1,
+        "title": "User Group Membership",
+        "timeContext": {
+          "durationMs": 2592000000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "sortBy": [],
+        "tileSettings": {
+          "showBorder": false
+        }
+      },
+      "customWidth": "50",
+      "name": "query - 14",
+      "styleSettings": {
+        "maxWidth": "50"
+      }
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let UserPrincipalName_ = \"{AccountUPN}\";\r\nIdentityInfo\r\n| extend UserPrincipalName = AccountUPN\r\n| extend UserDisplayName = AccountDisplayName\r\n| where UserPrincipalName contains UserPrincipalName_\r\n| project UserDisplayName, Department, EmployeeId, JobTitle, MailAddress, Manager, CompanyName, \r\n          Phone, IsAccountEnabled, SourceSystem, TimeGenerated\r\n| summarize by UserDisplayName, Department, EmployeeId, JobTitle, MailAddress, Manager, \r\n             CompanyName, Phone, IsAccountEnabled, SourceSystem\r\n| take 1\r\n",
+        "size": 4,
+        "title": "User Details",
+        "timeContext": {
+          "durationMs": 2592000000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "customWidth": "50",
+      "name": "query - 13",
+      "styleSettings": {
+        "margin": "0",
+        "padding": "0",
+        "maxWidth": "50"
+      }
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let UserPrincipalName_ = \"{AccountUPN}\";\r\nAuditLogs\r\n| where ActivityDisplayName == \"Add member to role\"\r\n| where Identity ==\"Microsoft Office 365 Portal\"\r\n| extend Initiator = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)\r\n| extend TargetResource = tostring(TargetResources[0].userPrincipalName)\r\n| where TargetResource contains tostring(UserPrincipalName_)\r\n| extend RoleAssigned = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))\r\n| extend RoleAssigned1 = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[2].oldValue)))\r\n| project TimeGenerated , OperationName, Identity , TargetResource , Initiator , UserPrincipalName_ , RoleAssigned , RoleAssigned1  \r\n",
+        "size": 4,
+        "showAnalytics": true,
+        "title": "Recent Roles Assigned to User",
+        "noDataMessage": "No Results for Selected User",
+        "noDataMessageStyle": 3,
+        "timeContext": {
+          "durationMs": 2592000000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "conditionalVisibility": {
+        "parameterName": "UserPrincipal",
+        "comparison": "isNotEqualTo",
+        "value": "None"
+      },
+      "name": "query - 2"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let UserPrincipalName_ = \"{AccountUPN}\";\r\nIdentityInfo \r\n| where AccountUPN contains UserPrincipalName_\r\n| extend Group1 = tostring(GroupMembership[0])\r\n| extend Group2= tostring(GroupMembership[1])\r\n| extend Group3 = tostring(GroupMembership[2])\r\n| extend Group4 = tostring(GroupMembership[3])\r\n| extend Group5 = tostring(GroupMembership[4])\r\n| extend Group6 = tostring(GroupMembership[5])\r\n| extend AccountName_ = tolower(AccountName)\r\n| summarize arg_max(AccountUPN, Group1, Group2, Group3, Group4, Group5 , Group6 ) by AccountName_",
+        "size": 4,
+        "title": "User Group Info",
+        "noDataMessage": "No data Available for User",
+        "noDataMessageStyle": 3,
+        "timeContext": {
+          "durationMs": 2592000000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "AccountUPN",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "representation": "turquoise",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "turquoise",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "customWidth": "50",
+      "name": "query - 5"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let UserPrincipalName_ = \"{AccountUPN}\";\r\nIdentityInfo\r\n| where AccountUPN contains UserPrincipalName_\r\n| where isnotempty(RiskLevel)\r\n| where RiskLevel <> \"None\"\r\n| summarize arg_max(RiskState, RiskLevel) by AccountDisplayName ",
+        "size": 4,
+        "title": "Risk State of User",
+        "noDataMessage": "No Results for Selected User",
+        "noDataMessageStyle": 3,
+        "timeContext": {
+          "durationMs": 2592000000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "customWidth": "50",
+      "name": "query - 7",
+      "styleSettings": {
+        "maxWidth": "50"
+      }
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Section 2: User Sign-in Activity "
+      },
+      "name": "text - 21"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "66ea1936-58a4-47b4-8e26-8e20e1362cba",
+            "version": "KqlParameterItem/1.0",
+            "name": "TimeRange",
+            "label": "Time Range",
+            "type": 4,
+            "isRequired": true,
+            "typeSettings": {
+              "selectableValues": [
+                {
+                  "durationMs": 300000
+                },
+                {
+                  "durationMs": 900000
+                },
+                {
+                  "durationMs": 1800000
+                },
+                {
+                  "durationMs": 3600000
+                },
+                {
+                  "durationMs": 14400000
+                },
+                {
+                  "durationMs": 43200000
+                },
+                {
+                  "durationMs": 86400000
+                },
+                {
+                  "durationMs": 172800000
+                },
+                {
+                  "durationMs": 259200000
+                },
+                {
+                  "durationMs": 604800000
+                },
+                {
+                  "durationMs": 1209600000
+                },
+                {
+                  "durationMs": 2419200000
+                },
+                {
+                  "durationMs": 2592000000
+                },
+                {
+                  "durationMs": 5184000000
+                },
+                {
+                  "durationMs": 7776000000
+                }
+              ]
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "value": {
+              "durationMs": 604800000
+            }
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "parameters - 17"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let UserPrincipalName_ = \"{AccountUPN}\";\r\nIdentityInfo \r\n| where AccountUPN contains UserPrincipalName_\r\n| extend Role1 = tostring(AssignedRoles[0])\r\n| extend Role2= tostring(AssignedRoles[1])\r\n| extend Role3 = tostring(AssignedRoles[2])\r\n| extend Role4 = tostring(AssignedRoles[3])\r\n| extend Role5= tostring(AssignedRoles[4])\r\n| extend Role6 = tostring(AssignedRoles[5])\r\n| extend Role7 = tostring(AssignedRoles[6])\r\n| extend AccountName_ = tolower(AccountName)\r\n| summarize arg_max ( AccountUPN , Role1, Role2 , Role3 , Role4 ,Role5 , Role6 , Role7 , AssignedRoles) by AccountName_",
+        "size": 4,
+        "showAnalytics": true,
+        "title": "Active Directory Roles Assigned to User",
+        "noDataMessage": "No Information for User",
+        "noDataMessageStyle": 3,
+        "timeContext": {
+          "durationMs": 2592000000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "AccountUPN",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "turquoise",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "customWidth": "50",
+      "name": "query - 4"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let UserPrincipalName_ = \"{AccountUPN}\";\r\nSigninLogs\r\n| where UserPrincipalName contains UserPrincipalName_\r\n| extend DeviceBrowser = tostring(DeviceDetail.browser)\r\n| extend DeviceId = tostring(DeviceDetail.deviceId)\r\n| extend DeviceDisplayName = tostring(DeviceDetail.displayName)\r\n| extend DeviceOperatingSystem = tostring(DeviceDetail.operatingSystem)\r\n| extend DeviceTrustType = tostring(DeviceDetail.trustType)\r\n| extend DeviceIsManaged = tostring(DeviceDetail.isManaged)\r\n| extend City = tostring(LocationDetails.city)\r\n| extend CountryOrRegion = tostring(LocationDetails.countryOrRegion)\r\n| extend State = tostring(LocationDetails.state)\r\n| extend StatusAdditionalDetails = tostring(Status.additionalDetails)\r\n| extend StatusFailureReason = tostring(Status.failureReason)\r\n| project TimeGenerated,OperationName,UserDisplayName,UserPrincipalName,IPAddress,UserType,UserId,AuthenticationRequirement,AppDisplayName,AppId, ClientAppUsed, Location, RiskDetail,RiskState,IsRisky,RiskLevelDuringSignIn,DeviceDisplayName,DeviceBrowser,DeviceId,DeviceOperatingSystem,DeviceTrustType,City,State,StatusAdditionalDetails,StatusFailureReason,AutonomousSystemNumber,CrossTenantAccessType\r\n| summarize by UserDisplayName,DeviceDisplayName,DeviceId,DeviceTrustType\r\n//| project-away TimeGenerated,OperationName,UserPrincipalName,IPAddress,UserType,UserId,AuthenticationRequirement,AppDisplayName,AppId, ClientAppUsed, Location,DeviceDisplayName,DeviceBrowser,DeviceId,DeviceOperatingSystem,DeviceTrustType,City,State,StatusAdditionalDetails,StatusFailureReason,AutonomousSystemNumber,CrossTenantAccessType,DeviceDisplayName,DeviceOperatingSystem",
+        "size": 4,
+        "title": "User Sign In - Device Details",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "customWidth": "50",
+      "name": "query - 11",
+      "styleSettings": {
+        "maxWidth": "50"
+      }
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let UserPrincipalName_ = \"{AccountUPN}\";\r\nSigninLogs\r\n| where UserPrincipalName contains UserPrincipalName_\r\n| extend DeviceBrowser = tostring(DeviceDetail.browser)\r\n| extend DeviceId = tostring(DeviceDetail.deviceId)\r\n| extend DeviceDisplayName = tostring(DeviceDetail.displayName)\r\n| extend DeviceOperatingSystem = tostring(DeviceDetail.operatingSystem)\r\n| extend DeviceTrustType = tostring(DeviceDetail.trustType)\r\n| extend DeviceIsManaged = tostring(DeviceDetail.isManaged)\r\n| extend City = tostring(LocationDetails.city)\r\n| extend CountryOrRegion = tostring(LocationDetails.countryOrRegion)\r\n| extend State = tostring(LocationDetails.state)\r\n| extend StatusAdditionalDetails = tostring(Status.additionalDetails)\r\n| extend StatusFailureReason = tostring(Status.failureReason)\r\n| project TimeGenerated,OperationName,UserDisplayName,UserPrincipalName,IPAddress,UserType,UserId,AuthenticationRequirement,AppDisplayName,AppId, ClientAppUsed, Location, RiskDetail,RiskState,IsRisky,RiskLevelDuringSignIn,DeviceDisplayName,DeviceBrowser,DeviceId,DeviceOperatingSystem,DeviceTrustType,City,State,StatusAdditionalDetails,StatusFailureReason,AutonomousSystemNumber,CrossTenantAccessType\r\n| summarize by UserDisplayName,RiskDetail,RiskState,IsRisky,RiskLevelDuringSignIn\r\n//| project-away TimeGenerated,OperationName,UserPrincipalName,IPAddress,UserType,UserId,AuthenticationRequirement,AppDisplayName,AppId, ClientAppUsed, Location,DeviceDisplayName,DeviceBrowser,DeviceId,DeviceOperatingSystem,DeviceTrustType,City,State,StatusAdditionalDetails,StatusFailureReason,AutonomousSystemNumber,CrossTenantAccessType",
+        "size": 4,
+        "title": "User Risky Details",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "customWidth": "50",
+      "name": "query - 10",
+      "styleSettings": {
+        "margin": "0",
+        "maxWidth": "50"
+      }
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let UserPrincipalName_ = \"{AccountUPN}\";\r\nSigninLogs\r\n| where UserPrincipalName contains UserPrincipalName_\r\n| extend DeviceBrowser = tostring(DeviceDetail.browser)\r\n| extend DeviceId = tostring(DeviceDetail.deviceId)\r\n| extend DeviceDisplayName = parse_json(DeviceDetail).displayName\r\n| extend DeviceOperatingSystem = parse_json(DeviceDetail).operatingSystem\r\n| extend DeviceTrustType = tostring(DeviceDetail.trustType)\r\n| extend DeviceIsManaged = tostring(DeviceDetail.isManaged)\r\n| extend City = tostring(LocationDetails.city)\r\n| extend CountryOrRegion = tostring(LocationDetails.countryOrRegion)\r\n| extend State = tostring(LocationDetails.state)\r\n| extend StatusAdditionalDetails = tostring(Status.additionalDetails)\r\n| extend StatusFailureReason = tostring(Status.failureReason)\r\n| project TimeGenerated,ResultType,StatusFailureReason,DeviceDisplayName,DeviceOperatingSystem,DeviceBrowser,Location,City,State,AppDisplayName,UserType, RiskDetail,RiskState,IsRisky,RiskLevelDuringSignIn,DeviceId,DeviceTrustType,StatusAdditionalDetails,AutonomousSystemNumber,CrossTenantAccessType",
+        "size": 1,
+        "title": "Interactive Sign In Activity for {AccountUPN}",
+        "noDataMessage": "No Results for Selected User",
+        "noDataMessageStyle": 3,
+        "timeContextFromParameter": "TimeRange",
+        "showExportToExcel": true,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "ResultType",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": "==",
+                    "thresholdValue": "0",
+                    "representation": "green",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "!=",
+                    "thresholdValue": "0",
+                    "representation": "redBright",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": null,
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "StatusFailureReason",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "icons",
+                "thresholdsGrid": [
+                  {
+                    "operator": "contains",
+                    "thresholdValue": "Device Authentication Required ",
+                    "representation": "4",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Strong Authentication is required.",
+                    "representation": "2",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Access has been blocked due to conditional access policies.",
+                    "representation": "1",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "contains",
+                    "thresholdValue": "Flow token expired",
+                    "representation": "1",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "contains",
+                    "thresholdValue": "authentication",
+                    "representation": "1",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "Blank",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "ResultSignature",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": "==",
+                    "thresholdValue": "FAILURE",
+                    "representation": "redBright",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "SUCCESS",
+                    "representation": "green",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "None",
+                    "representation": "grayBlue",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "sourceColumn": "StatusFailureReason",
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "sortBy": []
+      },
+      "name": "query - 9"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let UserPrincipalName_ = \"{AccountUPN}\";\r\nAADNonInteractiveUserSignInLogs\r\n| where UserPrincipalName contains UserPrincipalName_\r\n| extend DeviceBrowser = parse_json(DeviceDetail).browser\r\n| extend DeviceDisplayName = parse_json(DeviceDetail).displayName\r\n| extend DeviceOperatingSystem = parse_json(DeviceDetail).operatingSystem\r\n| extend City = parse_json(LocationDetails).city\r\n| extend CountryOrRegion = parse_json(LocationDetails).countryOrRegion\r\n| extend State = parse_json(LocationDetails).state\r\n| extend StatusAdditionalDetails = parse_json(Status).additionalDetails\r\n| extend StatusFailureReason = parse_json(Status).failureReason\r\n| project TimeGenerated,ResultType,StatusFailureReason,DeviceDisplayName,DeviceOperatingSystem,DeviceBrowser,Location,City,State,AppDisplayName,UserType, RiskDetail,RiskState,IsRisky,RiskLevelDuringSignIn,StatusAdditionalDetails,AutonomousSystemNumber,CrossTenantAccessType\r\n",
+        "size": 0,
+        "title": "Interactive Sign In Activity for {AccountUPN}",
+        "noDataMessage": "No Results for Selected User",
+        "noDataMessageStyle": 3,
+        "timeContextFromParameter": "TimeRange",
+        "showExportToExcel": true,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "ResultType",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": "==",
+                    "thresholdValue": "0",
+                    "representation": "green",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "!=",
+                    "thresholdValue": "0",
+                    "representation": "redBright",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": null,
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "StatusFailureReason",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "icons",
+                "thresholdsGrid": [
+                  {
+                    "operator": "contains",
+                    "thresholdValue": "Device Authentication Required ",
+                    "representation": "4",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Strong Authentication is required.",
+                    "representation": "2",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Access has been blocked due to conditional access policies.",
+                    "representation": "1",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "contains",
+                    "thresholdValue": "Flow token expired",
+                    "representation": "1",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "contains",
+                    "thresholdValue": "authentication",
+                    "representation": "1",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "Blank",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "ResultSignature",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": "==",
+                    "thresholdValue": "FAILURE",
+                    "representation": "redBright",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "SUCCESS",
+                    "representation": "green",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "None",
+                    "representation": "grayBlue",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "sourceColumn": "StatusFailureReason",
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "sortBy": []
+      },
+      "name": "query - 16"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let UPN = \"{AccountUPN}\";\r\nBehaviorAnalytics\r\n| where UserPrincipalName =~ UPN\r\n| extend AccountDomain_ = tostring(UsersInsights.AccountDomain)\r\n| extend AccountObjectID_ = tostring(UsersInsights.AccountObjectID)\r\n| extend OnPremisesSID_ = tostring(UsersInsights.OnPremisesSID)\r\n| extend App_ = tostring(ActivityInsights.App)\r\n| extend Resource_ = tostring(ActivityInsights.Resource)\r\n| project TimeGenerated,ActivityType,ActionType,UserName,InvestigationPriority,SourceIPAddress,SourceIPLocation,SourceDevice,AccountDomain_,App_",
+        "size": 0,
+        "title": "Behaviour Analysis for {AccountUPN}",
+        "noDataMessage": "No Results for Selected User",
+        "noDataMessageStyle": 3,
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "ActivityType",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "icons",
+                "thresholdsGrid": [
+                  {
+                    "operator": "==",
+                    "thresholdValue": "FailedLogOn",
+                    "representation": "Sev0",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "success",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "ActionType",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Device Authentication Required",
+                    "representation": "red",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Flow token expired - Authentication Failed",
+                    "representation": "yellow",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Sign-in",
+                    "representation": "green",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Access has been blocked due to conditional access policies",
+                    "representation": "yellow",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "User did not pass the MFA challenge",
+                    "representation": "yellow",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "This error occurred due to 'Keep me signed in' interrupt when the user was signing-in",
+                    "representation": "yellow",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "User did not pass the MFA challenge (non interactive)",
+                    "representation": "yellow",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": null,
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "InvestigationPriority",
+              "formatter": 8,
+              "formatOptions": {
+                "palette": "greenRed"
+              }
+            }
+          ],
+          "rowLimit": 10000,
+          "filter": true
+        },
+        "sortBy": []
+      },
+      "name": "query - 12"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let UserPrincipalName_ = \"{AccountUPN}\";\r\nSigninLogs\r\n| where UserPrincipalName contains tostring(UserPrincipalName_)\r\n| extend City = tostring(LocationDetails.city)\r\n| extend Country = tostring(LocationDetails.countryOrRegion)\r\n| extend State = tostring(LocationDetails.state)\r\n| summarize arg_max(TimeGenerated, SourceSystem ,City,Country,State, AppDisplayName,IPAddress,ConditionalAccessStatus, DeviceDetail,UserType) by Identity\r\n\r\n",
+        "size": 4,
+        "title": "User Recent Log In Details",
+        "noDataMessage": "No data for selected user",
+        "noDataMessageStyle": 3,
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "query - 8"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Section 3: Office 365 Activity"
+      },
+      "name": "text - 22"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "b5551af9-b6b7-4e8c-89ff-b9a8201331fc",
+            "version": "KqlParameterItem/1.0",
+            "name": "Operation",
+            "label": "Office Operation",
+            "type": 2,
+            "isRequired": true,
+            "multiSelect": true,
+            "quote": "'",
+            "delimiter": ",",
+            "query": "OfficeActivity\r\n| summarize by Operation",
+            "typeSettings": {
+              "additionalResourceOptions": [
+                "value::all"
+              ],
+              "showDefault": false
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "defaultValue": "value::all",
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "value": [
+              "value::all"
+            ]
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "parameters - 19"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let UPN = \"{AccountUPN}\";\r\nlet Operation_ = \"{Operation}\";\r\nOfficeActivity\r\n| where UserId =~ UPN\r\n| where \"{Operation:lable}\"==\"All\" or Operation in ({Operation})\r\n| project TimeGenerated, Operation, OfficeWorkload, ClientIP, Site_Url, SourceRelativeUrl, SourceFileName\r\n",
+        "size": 0,
+        "title": "Office Activity for {AccountUPN}",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "query - 18"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let UserPrincipalName_ = \"{AccountUPN}\";\r\nIntuneDevices\r\n| where isnotempty(UPN)\r\n| where UPN contains UserPrincipalName_\r\n| summarize arg_max(OperationName , UPN , LastContact , OSVersion ,OS, SerialNumber, CompliantState ,Ownership, ManagedBy ,Model, Manufacturer , DeviceState , IMEI , JoinType, WifiMacAddress) by DeviceName",
+        "size": 4,
+        "title": "Intune Devices ",
+        "noDataMessage": "No results for Selected User",
+        "noDataMessageStyle": 3,
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "UPN",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "turquoise",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "customWidth": "50",
+      "name": "query - 6"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Section 4: Related Incidents"
+      },
+      "name": "text - 23"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let UserPrincipalName_ = \"{AccountUPN}\";\r\nSecurityIncident\r\n| extend SystemAlertId = tostring(AlertIds[0])\r\n| extend AssignedTo_ = tostring(Owner.assignedTo)\r\n| summarize arg_max(TimeGenerated , *) by IncidentNumber\r\n| join SecurityAlert on SystemAlertId\r\n| extend EntityName = tostring(parse_json(Entities)[1].DisplayName)\r\n| where EntityName contains UserPrincipalName_\r\n| project TimeGenerated ,IncidentNumber,Severity, Title , Description ,AssignedTo_, EntityName, IncidentUrl",
+        "size": 1,
+        "showAnalytics": true,
+        "title": "Recent Incident Related to User",
+        "noDataMessage": "No Results for Selected User",
+        "noDataMessageStyle": 3,
+        "timeContext": {
+          "durationMs": 2592000000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "Severity",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Medium",
+                    "representation": "orange",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Low",
+                    "representation": "yellow",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "High",
+                    "representation": "red",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "gray",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "IncidentUrl",
+              "formatter": 7,
+              "formatOptions": {
+                "linkTarget": "Url"
+              }
+            }
+          ],
+          "filter": true
+        }
+      },
+      "name": "query - 3"
+    }
+  ],
+  "fallbackResourceIds": [
+    ""
+  ],
+  "fromTemplateId": "sentinel-UserWorkbook",
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}
