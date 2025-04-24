@@ -6,7 +6,7 @@ This repository contains custom Azure Sentinel Workbooks designed to enhance thr
 1. [User Analytics Behaviour Workbook](#user-analytics-behaviour-workbook)
 2. [Network Firewall Events Workbook](#network-firewall-events-workbook)
 
-## 📊 User Analytics Behaviour Workbook
+## User Analytics Behaviour Workbook
 
 ### 🎯 Overview
 The **User Analytics Behaviour** workbook provides insights into user activities, allowing security teams to detect anomalous behavior, suspicious login attempts, and potential insider threats. It leverages data collected from log sources ingested by **Microsoft Sentinel**.
@@ -74,7 +74,7 @@ If you’d like to contribute:
 
 ---
 
-## 📊 Network Firewall Events Workbook
+## Network Firewall Events Workbook
 
 ### 🎯 Overview
 
