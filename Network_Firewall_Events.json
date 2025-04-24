@@ -1,0 +1,285 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "# Networks Overview"
+      },
+      "name": "text - 0"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "a5c18655-3e2d-4d12-8ba4-82e57b296581",
+            "version": "KqlParameterItem/1.0",
+            "name": "TimeRange",
+            "type": 4,
+            "isRequired": true,
+            "value": {
+              "durationMs": 86400000
+            },
+            "typeSettings": {
+              "selectableValues": [
+                {
+                  "durationMs": 300000
+                },
+                {
+                  "durationMs": 900000
+                },
+                {
+                  "durationMs": 1800000
+                },
+                {
+                  "durationMs": 3600000
+                },
+                {
+                  "durationMs": 14400000
+                },
+                {
+                  "durationMs": 43200000
+                },
+                {
+                  "durationMs": 86400000
+                },
+                {
+                  "durationMs": 172800000
+                },
+                {
+                  "durationMs": 259200000
+                },
+                {
+                  "durationMs": 604800000
+                },
+                {
+                  "durationMs": 1209600000
+                },
+                {
+                  "durationMs": 2419200000
+                },
+                {
+                  "durationMs": 2592000000
+                },
+                {
+                  "durationMs": 5184000000
+                },
+                {
+                  "durationMs": 7776000000
+                }
+              ],
+              "allowCustom": true
+            }
+          },
+          {
+            "id": "32f5a8aa-9c54-4fd1-a2b9-8461b2c57f55",
+            "version": "KqlParameterItem/1.0",
+            "name": "Source_IP",
+            "label": "Source IP",
+            "type": 1,
+            "timeContext": {
+              "durationMs": 0
+            },
+            "timeContextFromParameter": "TimeRange",
+            "value": ""
+          },
+          {
+            "id": "b937ca33-bc62-4183-bc0f-9ad8306dc36a",
+            "version": "KqlParameterItem/1.0",
+            "name": "Destination_IP",
+            "label": "Destination IP",
+            "type": 1,
+            "timeContext": {
+              "durationMs": 0
+            },
+            "timeContextFromParameter": "TimeRange",
+            "defaultValue": "value::all",
+            "value": ""
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "parameters - 5"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "7f28bae3-a11f-408a-832f-77a0f3e633d7",
+            "version": "KqlParameterItem/1.0",
+            "name": "DeviceAction_",
+            "label": "DeviceAction",
+            "type": 2,
+            "multiSelect": true,
+            "quote": "'",
+            "delimiter": ",",
+            "query": "CommonSecurityLog\r\n| summarize by DeviceAction",
+            "typeSettings": {
+              "additionalResourceOptions": [
+                "value::all"
+              ],
+              "selectAllValue": "",
+              "showDefault": false
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "timeContextFromParameter": "TimeRange",
+            "defaultValue": "value::all",
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "value": [
+              "allow"
+            ]
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "parameters - 35"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Traffic events summary"
+      },
+      "name": "text - 11"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let selectedDeviceAction = tostring(\"{DeviceAction_}\");\r\nlet selectedDestinationIP = tostring(\"{Destination_IP}\");\r\n//let Source_IP_value = iff(tostring(\"{Source_IP}\") == \"\" or tostring(\"{Source_IP}\") == \"All\", \"*\", \"{Source_IP}\");\r\nlet Source_IP_value = tostring(\"{Source_IP}\");\r\nCommonSecurityLog\r\n| where (selectedDeviceAction == \"All\" or DeviceAction in ({DeviceAction_}))\r\n//| where (selectedDestinationIP == \"All\" or DestinationIP in ({Destination_IP}))\r\n| where DestinationIP has_any (selectedDestinationIP)\r\n| where SourceIP has_any (Source_IP_value)\r\n| project TimeGenerated, DeviceAction, ApplicationProtocol, EventCount, DestinationPort, DestinationIP, \r\n         ReceivedBytes, SentBytes, Protocol, SourcePort, SourceIP, RequestURL, \r\n         DeviceCustomString1Label, SourceUserName\r\n| sort by TimeGenerated",
+        "size": 0,
+        "title": "Firewall events",
+        "timeContextFromParameter": "TimeRange",
+        "showExportToExcel": true,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "Firewall Events"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let selectedDeviceAction = tostring(\"{DeviceAction_}\");\r\nlet selectedDestinationIP = tostring(\"{Destination_IP}\");\r\nlet Source_IP_value = tostring(\"{Source_IP}\");\r\nlet data = CommonSecurityLog\r\n//| where (selectedDestinationIP == \"All\" or DestinationIP in ({Destination_IP}))\r\n| where DestinationIP has_any (selectedDestinationIP)\r\n| where SourceIP has_any (Source_IP_value);\r\ndata\r\n| summarize Count = count() by DeviceAction\r\n| join kind = inner (\r\n    CommonSecurityLog\r\n    | make-series Trend = count() default = 0 \r\n        on TimeGenerated \r\n        from {TimeRange:start} to {TimeRange:end} step {TimeRange:grain} \r\n        by DeviceAction\r\n) on DeviceAction\r\n| project-away DeviceAction1, TimeGenerated\r\n| extend DeviceAction = DeviceAction\r\n| union (\r\n    data \r\n    | summarize Count = count() \r\n    | extend jkey = 1\r\n    | join kind = inner (\r\n        data\r\n        | make-series Trend = count() default = 0 \r\n            on TimeGenerated \r\n            from {TimeRange:start} to {TimeRange:end} step {TimeRange:grain}\r\n        | extend jkey = 1\r\n    ) on jkey\r\n    | extend DeviceAction = \"All\", DeviceActions = \"*\"\r\n)\r\n| order by Count desc\r\n| take 10\r\n",
+        "size": 0,
+        "title": "Device action summary - click to filter the graph below",
+        "timeContextFromParameter": "TimeRange",
+        "exportFieldName": "DeviceAction",
+        "exportParameterName": "DeviceAction",
+        "exportDefaultValue": "All",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "tiles",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "Count",
+              "formatter": 3,
+              "formatOptions": {
+                "palette": "blueDark",
+                "showIcon": true
+              }
+            },
+            {
+              "columnMatch": "Trend",
+              "formatter": 9,
+              "formatOptions": {
+                "palette": "blueDark",
+                "showIcon": true
+              }
+            },
+            {
+              "columnMatch": "jkey",
+              "formatter": 5,
+              "formatOptions": {
+                "showIcon": true
+              }
+            },
+            {
+              "columnMatch": "TimeGenerated",
+              "formatter": 5,
+              "formatOptions": {
+                "showIcon": true
+              }
+            },
+            {
+              "columnMatch": "jkey1",
+              "formatter": 5,
+              "formatOptions": {
+                "showIcon": true
+              }
+            },
+            {
+              "columnMatch": "DeviceActions",
+              "formatter": 5,
+              "formatOptions": {
+                "showIcon": true
+              }
+            }
+          ]
+        },
+        "tileSettings": {
+          "titleContent": {
+            "columnMatch": "DeviceAction",
+            "formatter": 1
+          },
+          "leftContent": {
+            "columnMatch": "Count",
+            "formatter": 12,
+            "formatOptions": {
+              "palette": "auto"
+            },
+            "numberFormat": {
+              "unit": 17,
+              "options": {
+                "maximumSignificantDigits": 3,
+                "maximumFractionDigits": 2
+              }
+            }
+          },
+          "secondaryContent": {
+            "columnMatch": "Trend",
+            "formatter": 9
+          },
+          "showBorder": false,
+          "size": "auto"
+        }
+      },
+      "customWidth": "50",
+      "name": "Traffic activity summary",
+      "styleSettings": {
+        "margin": "0px"
+      }
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let selectedDestinationIP = tostring(\"{Destination_IP}\");\r\nlet Source_IP_value = tostring(\"{Source_IP}\");\r\nCommonSecurityLog\r\n//| where (selectedDestinationIP == \"All\" or DestinationIP in ({Destination_IP}))\r\n| where DestinationIP has_any (selectedDestinationIP)\r\n| where SourceIP has_any (Source_IP_value)\r\n//| where (selectedDeviceAction == \"All\" or DeviceAction in ({DeviceAction_}))\r\n| where '{DeviceAction}' == \"All\" or DeviceAction=='{DeviceAction}'\r\n| summarize EventCount= count() by DeviceAction, bin_at(TimeGenerated, {TimeRange:grain}, {TimeRange:start})",
+        "size": 0,
+        "title": "Device action, by time",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "barchart"
+      },
+      "customWidth": "50",
+      "name": "Traffic activity by time"
+    }
+  ],
+  "fallbackResourceIds": [
+    ""
+  ],
+  "fromTemplateId": "sentinel-UserWorkbook",
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}
