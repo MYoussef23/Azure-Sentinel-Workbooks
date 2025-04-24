@@ -3,8 +3,8 @@
 This repository contains custom Azure Sentinel Workbooks designed to enhance threat detection and security monitoring.
 
 ## Table of Contents
-1. [User Analytics Behaviour Workbook](##user-analytics-behaviour-workbook)
-2. [Network Firewall Events Workbook](##network-firewall-events-workbook)
+1. [User Analytics Behaviour Workbook](#user-analytics-behaviour-workbook)
+2. [Network Firewall Events Workbook](#network-firewall-events-workbook)
 
 ## 📊 User Analytics Behaviour Workbook
 
