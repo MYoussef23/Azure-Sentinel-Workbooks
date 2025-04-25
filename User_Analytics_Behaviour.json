@@ -4,16 +4,54 @@
     {
       "type": 1,
       "content": {
-        "json": "# User Analytics and Discovery"
+        "json": "# User Analytics and Discovery\r\n"
       },
       "name": "text - 2"
+    },
+    {
+      "type": 11,
+      "content": {
+        "version": "LinkItem/1.0",
+        "style": "nav",
+        "links": [
+          {
+            "id": "fe058151-c23e-44d0-a47e-ed523123b68a",
+            "cellValue": "parameters - 0",
+            "linkTarget": "step",
+            "linkLabel": "Section 1: User Idenity Information",
+            "style": "link"
+          },
+          {
+            "id": "128cc62b-99b6-476d-a5b8-93330ebc2fb0",
+            "cellValue": "parameters - 17",
+            "linkTarget": "step",
+            "linkLabel": "Section 2: User Sign-in Activity",
+            "style": "link"
+          },
+          {
+            "id": "77cae469-3dfb-4561-81f2-0def131b2a24",
+            "cellValue": "parameters - 19",
+            "linkTarget": "step",
+            "linkLabel": "Section 3: Office 365 Activity",
+            "style": "link"
+          },
+          {
+            "id": "d430bfae-c1cb-4387-944a-72a837682ebd",
+            "cellValue": "query - 3",
+            "linkTarget": "step",
+            "linkLabel": "Section 4: Related Incidents",
+            "style": "link"
+          }
+        ]
+      },
+      "name": "links - 29"
     },
     {
       "type": 1,
       "content": {
         "json": "## Section 1: User Idenity Information"
       },
-      "name": "text - 20"
+      "name": "Section1"
     },
     {
       "type": 9,
@@ -44,7 +82,7 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let UserInput = \"{AccountUPN}\";\nIdentityInfo\n| extend UserPrincipalName = AccountUPN\n| extend UserDisplayName = AccountDisplayName\n| where UserPrincipalName =~ UserInput\n| summarize by UserDisplayName, UserPrincipalName, IsAccountEnabled, MailAddress, Manager, Department, JobTitle\n| sort by UserDisplayName asc",
+        "query": "let UserInput = \"{AccountUPN}\";\nIdentityInfo\n| extend UserPrincipalName = AccountUPN\n| extend UserDisplayName = AccountDisplayName\n| where UserPrincipalName contains UserInput\n| summarize by UserDisplayName, UserPrincipalName, IsAccountEnabled, MailAddress, Manager, Department, JobTitle, AccountCreationTime\n| sort by UserDisplayName asc",
         "size": 4,
         "timeContext": {
           "durationMs": 2592000000
@@ -186,11 +224,29 @@
       }
     },
     {
+      "type": 11,
+      "content": {
+        "version": "LinkItem/1.0",
+        "style": "nav",
+        "links": [
+          {
+            "id": "94461272-003d-445a-8e8a-ebe22a8004d7",
+            "cellValue": "parameters - 0",
+            "linkTarget": "step",
+            "linkLabel": "Back To Top",
+            "preText": "",
+            "style": "primary"
+          }
+        ]
+      },
+      "name": "links - 25 - Copy - Copy - Copy"
+    },
+    {
       "type": 1,
       "content": {
         "json": "## Section 2: User Sign-in Activity "
       },
-      "name": "text - 21"
+      "name": "Section2"
     },
     {
       "type": 9,
@@ -251,13 +307,14 @@
                 {
                   "durationMs": 7776000000
                 }
-              ]
+              ],
+              "allowCustom": true
             },
             "timeContext": {
               "durationMs": 86400000
             },
             "value": {
-              "durationMs": 604800000
+              "durationMs": 86400000
             }
           }
         ],
@@ -344,9 +401,9 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let UserPrincipalName_ = \"{AccountUPN}\";\r\nSigninLogs\r\n| where UserPrincipalName contains UserPrincipalName_\r\n| extend DeviceBrowser = tostring(DeviceDetail.browser)\r\n| extend DeviceId = tostring(DeviceDetail.deviceId)\r\n| extend DeviceDisplayName = parse_json(DeviceDetail).displayName\r\n| extend DeviceOperatingSystem = parse_json(DeviceDetail).operatingSystem\r\n| extend DeviceTrustType = tostring(DeviceDetail.trustType)\r\n| extend DeviceIsManaged = tostring(DeviceDetail.isManaged)\r\n| extend City = tostring(LocationDetails.city)\r\n| extend CountryOrRegion = tostring(LocationDetails.countryOrRegion)\r\n| extend State = tostring(LocationDetails.state)\r\n| extend StatusAdditionalDetails = tostring(Status.additionalDetails)\r\n| extend StatusFailureReason = tostring(Status.failureReason)\r\n| project TimeGenerated,ResultType,StatusFailureReason,DeviceDisplayName,DeviceOperatingSystem,DeviceBrowser,Location,City,State,AppDisplayName,UserType, RiskDetail,RiskState,IsRisky,RiskLevelDuringSignIn,DeviceId,DeviceTrustType,StatusAdditionalDetails,AutonomousSystemNumber,CrossTenantAccessType",
+        "query": "let UserPrincipalName_ = \"{AccountUPN}\";\r\nSigninLogs\r\n| where UserPrincipalName contains UserPrincipalName_\r\n| extend DeviceBrowser = tostring(DeviceDetail.browser)\r\n| extend DeviceId = tostring(DeviceDetail.deviceId)\r\n| extend DeviceDisplayName = parse_json(DeviceDetail).displayName\r\n| extend DeviceOperatingSystem = parse_json(DeviceDetail).operatingSystem\r\n| extend DeviceTrustType = tostring(DeviceDetail.trustType)\r\n| extend DeviceIsManaged = tostring(DeviceDetail.isManaged)\r\n| extend City = tostring(LocationDetails.city)\r\n| extend CountryOrRegion = tostring(LocationDetails.countryOrRegion)\r\n| extend State = tostring(LocationDetails.state)\r\n| extend StatusAdditionalDetails = tostring(Status.additionalDetails)\r\n| extend StatusFailureReason = tostring(Status.failureReason)\r\n| project TimeGenerated,ResultType,StatusFailureReason,DeviceDisplayName,DeviceOperatingSystem,DeviceBrowser,Location,City,State,AppDisplayName,IPAddress\r\n| sort by TimeGenerated desc",
         "size": 1,
-        "title": "Interactive Sign In Activity for {AccountUPN}",
+        "title": "Interactive Sign In Activity for {AccountUPN} in {TimeRange}",
         "noDataMessage": "No Results for Selected User",
         "noDataMessageStyle": 3,
         "timeContextFromParameter": "TimeRange",
@@ -460,7 +517,9 @@
                 ]
               }
             }
-          ]
+          ],
+          "rowLimit": 1000,
+          "filter": true
         },
         "sortBy": []
       },
@@ -470,9 +529,9 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let UserPrincipalName_ = \"{AccountUPN}\";\r\nAADNonInteractiveUserSignInLogs\r\n| where UserPrincipalName contains UserPrincipalName_\r\n| extend DeviceBrowser = parse_json(DeviceDetail).browser\r\n| extend DeviceDisplayName = parse_json(DeviceDetail).displayName\r\n| extend DeviceOperatingSystem = parse_json(DeviceDetail).operatingSystem\r\n| extend City = parse_json(LocationDetails).city\r\n| extend CountryOrRegion = parse_json(LocationDetails).countryOrRegion\r\n| extend State = parse_json(LocationDetails).state\r\n| extend StatusAdditionalDetails = parse_json(Status).additionalDetails\r\n| extend StatusFailureReason = parse_json(Status).failureReason\r\n| project TimeGenerated,ResultType,StatusFailureReason,DeviceDisplayName,DeviceOperatingSystem,DeviceBrowser,Location,City,State,AppDisplayName,UserType, RiskDetail,RiskState,IsRisky,RiskLevelDuringSignIn,StatusAdditionalDetails,AutonomousSystemNumber,CrossTenantAccessType\r\n",
+        "query": "let UserPrincipalName_ = \"{AccountUPN}\";\r\nAADNonInteractiveUserSignInLogs\r\n| where UserPrincipalName contains UserPrincipalName_\r\n| extend DeviceBrowser = parse_json(DeviceDetail).browser\r\n| extend DeviceDisplayName = parse_json(DeviceDetail).displayName\r\n| extend DeviceOperatingSystem = parse_json(DeviceDetail).operatingSystem\r\n| extend City = parse_json(LocationDetails).city\r\n| extend CountryOrRegion = parse_json(LocationDetails).countryOrRegion\r\n| extend State = parse_json(LocationDetails).state\r\n| extend StatusAdditionalDetails = parse_json(Status).additionalDetails\r\n| extend StatusFailureReason = parse_json(Status).failureReason\r\n| project TimeGenerated,ResultType,StatusFailureReason,DeviceDisplayName,DeviceOperatingSystem,DeviceBrowser,Location,City,State,AppDisplayName,IPAddress\r\n| sort by TimeGenerated desc",
         "size": 0,
-        "title": "Interactive Sign In Activity for {AccountUPN}",
+        "title": "Non-Interactive Sign In Activity for {AccountUPN} in {TimeRange}",
         "noDataMessage": "No Results for Selected User",
         "noDataMessageStyle": 3,
         "timeContextFromParameter": "TimeRange",
@@ -586,7 +645,9 @@
                 ]
               }
             }
-          ]
+          ],
+          "rowLimit": 1000,
+          "filter": true
         },
         "sortBy": []
       },
@@ -596,9 +657,23 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
+        "query": "",
+        "size": 4,
+        "title": "User Recent Log In Details",
+        "noDataMessage": "No data for selected user",
+        "noDataMessageStyle": 3,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "query - 8 - Copy"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
         "query": "let UPN = \"{AccountUPN}\";\r\nBehaviorAnalytics\r\n| where UserPrincipalName =~ UPN\r\n| extend AccountDomain_ = tostring(UsersInsights.AccountDomain)\r\n| extend AccountObjectID_ = tostring(UsersInsights.AccountObjectID)\r\n| extend OnPremisesSID_ = tostring(UsersInsights.OnPremisesSID)\r\n| extend App_ = tostring(ActivityInsights.App)\r\n| extend Resource_ = tostring(ActivityInsights.Resource)\r\n| project TimeGenerated,ActivityType,ActionType,UserName,InvestigationPriority,SourceIPAddress,SourceIPLocation,SourceDevice,AccountDomain_,App_",
         "size": 0,
-        "title": "Behaviour Analysis for {AccountUPN}",
+        "title": "Behaviour Analysis for {AccountUPN} in {TimeRange}",
         "noDataMessage": "No Results for Selected User",
         "noDataMessageStyle": 3,
         "timeContextFromParameter": "TimeRange",
@@ -715,11 +790,29 @@
       "name": "query - 8"
     },
     {
+      "type": 11,
+      "content": {
+        "version": "LinkItem/1.0",
+        "style": "nav",
+        "links": [
+          {
+            "id": "b75c39a9-0214-4dc0-bfa1-50b5b1147529",
+            "cellValue": "parameters - 0",
+            "linkTarget": "step",
+            "linkLabel": "Back To Top",
+            "preText": "",
+            "style": "primary"
+          }
+        ]
+      },
+      "name": "links - 25 - Copy - Copy"
+    },
+    {
       "type": 1,
       "content": {
         "json": "## Section 3: Office 365 Activity"
       },
-      "name": "text - 22"
+      "name": "Section3"
     },
     {
       "type": 9,
@@ -750,7 +843,7 @@
             "queryType": 0,
             "resourceType": "microsoft.operationalinsights/workspaces",
             "value": [
-              "value::all"
+              "FileUploaded"
             ]
           }
         ],
@@ -769,7 +862,10 @@
         "title": "Office Activity for {AccountUPN}",
         "timeContextFromParameter": "TimeRange",
         "queryType": 0,
-        "resourceType": "microsoft.operationalinsights/workspaces"
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "gridSettings": {
+          "filter": true
+        }
       },
       "name": "query - 18"
     },
@@ -809,20 +905,38 @@
       "name": "query - 6"
     },
     {
+      "type": 11,
+      "content": {
+        "version": "LinkItem/1.0",
+        "style": "nav",
+        "links": [
+          {
+            "id": "d34c3dbc-b467-406e-b8e0-2395a6ee7bc8",
+            "cellValue": "parameters - 0",
+            "linkTarget": "step",
+            "linkLabel": "Back To Top",
+            "preText": "",
+            "style": "primary"
+          }
+        ]
+      },
+      "name": "links - 25 - Copy"
+    },
+    {
       "type": 1,
       "content": {
         "json": "## Section 4: Related Incidents"
       },
-      "name": "text - 23"
+      "name": "Section4"
     },
     {
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let UserPrincipalName_ = \"{AccountUPN}\";\r\nSecurityIncident\r\n| extend SystemAlertId = tostring(AlertIds[0])\r\n| extend AssignedTo_ = tostring(Owner.assignedTo)\r\n| summarize arg_max(TimeGenerated , *) by IncidentNumber\r\n| join SecurityAlert on SystemAlertId\r\n| extend EntityName = tostring(parse_json(Entities)[1].DisplayName)\r\n| where EntityName contains UserPrincipalName_\r\n| project TimeGenerated ,IncidentNumber,Severity, Title , Description ,AssignedTo_, EntityName, IncidentUrl",
+        "query": "let UserPrincipalName_ = \"{AccountUPN}\";\r\nSecurityIncident\r\n| extend SystemAlertId = tostring(AlertIds[0])\r\n| extend AssignedTo_ = tostring(Owner.assignedTo)\r\n| summarize arg_max(TimeGenerated, *) by IncidentNumber\r\n| join SecurityAlert on SystemAlertId\r\n//| extend EntityName = tostring(parse_json(Entities)[1].DisplayName)\r\n//| where EntityName contains UserPrincipalName_\r\n| where Entities contains UserPrincipalName_\r\n| project TimeGenerated,IncidentNumber,Severity, Title, Description,AssignedTo_, Entities, IncidentUrl",
         "size": 1,
         "showAnalytics": true,
-        "title": "Recent Incident Related to User",
+        "title": "Recent Incident Related to User {AccountUPN}",
         "noDataMessage": "No Results for Selected User",
         "noDataMessageStyle": 3,
         "timeContext": {
@@ -877,6 +991,24 @@
         }
       },
       "name": "query - 3"
+    },
+    {
+      "type": 11,
+      "content": {
+        "version": "LinkItem/1.0",
+        "style": "nav",
+        "links": [
+          {
+            "id": "0c6c7272-1030-429a-92a4-3f5abb8d12e6",
+            "cellValue": "parameters - 0",
+            "linkTarget": "step",
+            "linkLabel": "Back To Top",
+            "preText": "",
+            "style": "primary"
+          }
+        ]
+      },
+      "name": "links - 25"
     }
   ],
   "fallbackResourceIds": [
