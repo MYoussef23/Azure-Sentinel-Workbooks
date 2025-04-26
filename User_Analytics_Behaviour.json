@@ -9,51 +9,6 @@
       "name": "text - 2"
     },
     {
-      "type": 11,
-      "content": {
-        "version": "LinkItem/1.0",
-        "style": "nav",
-        "links": [
-          {
-            "id": "fe058151-c23e-44d0-a47e-ed523123b68a",
-            "cellValue": "parameters - 0",
-            "linkTarget": "step",
-            "linkLabel": "Section 1: User Idenity Information",
-            "style": "link"
-          },
-          {
-            "id": "128cc62b-99b6-476d-a5b8-93330ebc2fb0",
-            "cellValue": "parameters - 17",
-            "linkTarget": "step",
-            "linkLabel": "Section 2: User Sign-in Activity",
-            "style": "link"
-          },
-          {
-            "id": "77cae469-3dfb-4561-81f2-0def131b2a24",
-            "cellValue": "parameters - 19",
-            "linkTarget": "step",
-            "linkLabel": "Section 3: Office 365 Activity",
-            "style": "link"
-          },
-          {
-            "id": "d430bfae-c1cb-4387-944a-72a837682ebd",
-            "cellValue": "query - 3",
-            "linkTarget": "step",
-            "linkLabel": "Section 4: Related Incidents",
-            "style": "link"
-          }
-        ]
-      },
-      "name": "links - 29"
-    },
-    {
-      "type": 1,
-      "content": {
-        "json": "## Section 1: User Idenity Information"
-      },
-      "name": "Section1"
-    },
-    {
       "type": 9,
       "content": {
         "version": "KqlParameterItem/1.0",
@@ -79,6 +34,60 @@
       "name": "parameters - 0"
     },
     {
+      "type": 11,
+      "content": {
+        "version": "LinkItem/1.0",
+        "style": "tabs",
+        "links": [
+          {
+            "id": "fe058151-c23e-44d0-a47e-ed523123b68a",
+            "cellValue": "selectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Section 1: User Idenity Information",
+            "subTarget": "Section1",
+            "style": "link"
+          },
+          {
+            "id": "128cc62b-99b6-476d-a5b8-93330ebc2fb0",
+            "cellValue": "selectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Section 2: User Sign-in Activity",
+            "subTarget": "Section2",
+            "style": "link"
+          },
+          {
+            "id": "77cae469-3dfb-4561-81f2-0def131b2a24",
+            "cellValue": "selectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Section 3: Office 365 Activity",
+            "subTarget": "Section3",
+            "style": "link"
+          },
+          {
+            "id": "d430bfae-c1cb-4387-944a-72a837682ebd",
+            "cellValue": "selectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Section 4: Related Incidents",
+            "subTarget": "Section4",
+            "style": "link"
+          }
+        ]
+      },
+      "name": "links - 29"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Section 1: User Idenity Information"
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section1"
+      },
+      "name": "Section1"
+    },
+    {
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
@@ -91,6 +100,11 @@
         "exportParameterName": "UserPrincipalName",
         "queryType": 0,
         "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section1"
       },
       "name": "query - 2"
     },
@@ -111,6 +125,11 @@
           "showBorder": false
         }
       },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section1"
+      },
       "customWidth": "50",
       "name": "query - 14",
       "styleSettings": {
@@ -129,6 +148,11 @@
         },
         "queryType": 0,
         "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section1"
       },
       "customWidth": "50",
       "name": "query - 13",
@@ -154,11 +178,18 @@
         "queryType": 0,
         "resourceType": "microsoft.operationalinsights/workspaces"
       },
-      "conditionalVisibility": {
-        "parameterName": "UserPrincipal",
-        "comparison": "isNotEqualTo",
-        "value": "None"
-      },
+      "conditionalVisibilities": [
+        {
+          "parameterName": "UserPrincipal",
+          "comparison": "isNotEqualTo",
+          "value": "None"
+        },
+        {
+          "parameterName": "selectedTab",
+          "comparison": "isEqualTo",
+          "value": "Section1"
+        }
+      ],
       "name": "query - 2"
     },
     {
@@ -199,6 +230,11 @@
           ]
         }
       },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section1"
+      },
       "customWidth": "50",
       "name": "query - 5"
     },
@@ -217,6 +253,11 @@
         "queryType": 0,
         "resourceType": "microsoft.operationalinsights/workspaces"
       },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section1"
+      },
       "customWidth": "50",
       "name": "query - 7",
       "styleSettings": {
@@ -224,27 +265,14 @@
       }
     },
     {
-      "type": 11,
-      "content": {
-        "version": "LinkItem/1.0",
-        "style": "nav",
-        "links": [
-          {
-            "id": "94461272-003d-445a-8e8a-ebe22a8004d7",
-            "cellValue": "parameters - 0",
-            "linkTarget": "step",
-            "linkLabel": "Back To Top",
-            "preText": "",
-            "style": "primary"
-          }
-        ]
-      },
-      "name": "links - 25 - Copy - Copy - Copy"
-    },
-    {
       "type": 1,
       "content": {
         "json": "## Section 2: User Sign-in Activity "
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section2"
       },
       "name": "Section2"
     },
@@ -322,6 +350,11 @@
         "queryType": 0,
         "resourceType": "microsoft.operationalinsights/workspaces"
       },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section2"
+      },
       "name": "parameters - 17"
     },
     {
@@ -359,6 +392,11 @@
           ]
         }
       },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section2"
+      },
       "customWidth": "50",
       "name": "query - 4"
     },
@@ -372,6 +410,11 @@
         "timeContextFromParameter": "TimeRange",
         "queryType": 0,
         "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section2"
       },
       "customWidth": "50",
       "name": "query - 11",
@@ -389,6 +432,11 @@
         "timeContextFromParameter": "TimeRange",
         "queryType": 0,
         "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section2"
       },
       "customWidth": "50",
       "name": "query - 10",
@@ -523,6 +571,11 @@
         },
         "sortBy": []
       },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section2"
+      },
       "name": "query - 9"
     },
     {
@@ -651,6 +704,11 @@
         },
         "sortBy": []
       },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section2"
+      },
       "name": "query - 16"
     },
     {
@@ -664,6 +722,11 @@
         "noDataMessageStyle": 3,
         "queryType": 0,
         "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section2"
       },
       "name": "query - 8 - Copy"
     },
@@ -772,6 +835,11 @@
         },
         "sortBy": []
       },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section2"
+      },
       "name": "query - 12"
     },
     {
@@ -787,30 +855,22 @@
         "queryType": 0,
         "resourceType": "microsoft.operationalinsights/workspaces"
       },
-      "name": "query - 8"
-    },
-    {
-      "type": 11,
-      "content": {
-        "version": "LinkItem/1.0",
-        "style": "nav",
-        "links": [
-          {
-            "id": "b75c39a9-0214-4dc0-bfa1-50b5b1147529",
-            "cellValue": "parameters - 0",
-            "linkTarget": "step",
-            "linkLabel": "Back To Top",
-            "preText": "",
-            "style": "primary"
-          }
-        ]
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section2"
       },
-      "name": "links - 25 - Copy - Copy"
+      "name": "query - 8"
     },
     {
       "type": 1,
       "content": {
         "json": "## Section 3: Office 365 Activity"
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section3"
       },
       "name": "Section3"
     },
@@ -851,6 +911,11 @@
         "queryType": 0,
         "resourceType": "microsoft.operationalinsights/workspaces"
       },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section3"
+      },
       "name": "parameters - 19"
     },
     {
@@ -866,6 +931,11 @@
         "gridSettings": {
           "filter": true
         }
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section3"
       },
       "name": "query - 18"
     },
@@ -901,31 +971,23 @@
           ]
         }
       },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section3"
+      },
       "customWidth": "50",
       "name": "query - 6"
-    },
-    {
-      "type": 11,
-      "content": {
-        "version": "LinkItem/1.0",
-        "style": "nav",
-        "links": [
-          {
-            "id": "d34c3dbc-b467-406e-b8e0-2395a6ee7bc8",
-            "cellValue": "parameters - 0",
-            "linkTarget": "step",
-            "linkLabel": "Back To Top",
-            "preText": "",
-            "style": "primary"
-          }
-        ]
-      },
-      "name": "links - 25 - Copy"
     },
     {
       "type": 1,
       "content": {
         "json": "## Section 4: Related Incidents"
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section4"
       },
       "name": "Section4"
     },
@@ -990,6 +1052,11 @@
           "filter": true
         }
       },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section4"
+      },
       "name": "query - 3"
     },
     {
@@ -999,7 +1066,7 @@
         "style": "nav",
         "links": [
           {
-            "id": "0c6c7272-1030-429a-92a4-3f5abb8d12e6",
+            "id": "b75c39a9-0214-4dc0-bfa1-50b5b1147529",
             "cellValue": "parameters - 0",
             "linkTarget": "step",
             "linkLabel": "Back To Top",
@@ -1008,7 +1075,7 @@
           }
         ]
       },
-      "name": "links - 25"
+      "name": "links - 25 - Copy - Copy"
     }
   ],
   "fallbackResourceIds": [
