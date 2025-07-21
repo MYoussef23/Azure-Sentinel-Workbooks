@@ -116,20 +116,20 @@
               },
               {
                 "criteriaContext": {
-                  "leftOperand": "Source_IP",
-                  "operator": "is Empty",
-                  "rightValType": "param",
-                  "resultValType": "static",
-                  "resultVal": "\"\""
-                }
-              },
-              {
-                "criteriaContext": {
                   "leftOperand": "Destination_IP",
                   "operator": "isNotNull",
                   "rightValType": "param",
                   "resultValType": "static",
                   "resultVal": "Destination IP"
+                }
+              },
+              {
+                "criteriaContext": {
+                  "leftOperand": "Source_IP",
+                  "operator": "is Empty",
+                  "rightValType": "param",
+                  "resultValType": "static",
+                  "resultVal": "\"\""
                 }
               },
               {
@@ -151,7 +151,6 @@
             ]
           },
           {
-            "id": "displayIpTypeParam",
             "version": "KqlParameterItem/1.0",
             "name": "IPValue",
             "type": 1,
@@ -200,7 +199,8 @@
                   "resultValType": "param"
                 }
               }
-            ]
+            ],
+            "id": "28fee015-a7f1-49c7-a8bb-5d06afb08da0"
           }
         ],
         "style": "pills",
@@ -275,7 +275,7 @@
       "content": {
         "version": "KqlItem/1.0",
         "query": "let selectedDeviceAction = tostring(\"{DeviceAction_}\");\r\nlet selectedDestinationIP = tostring(\"{Destination_IP}\");\r\nlet Source_IP_value = tostring(\"{Source_IP}\");\r\nlet byteData = CommonSecurityLog\r\n| where (selectedDeviceAction == \"All\" or DeviceAction in ({DeviceAction_}))\r\n| where DestinationIP has_any (selectedDestinationIP)\r\n| where SourceIP has_any (Source_IP_value)\r\n| summarize TotalSent = sum(SentBytes), TotalReceived = sum(ReceivedBytes);\r\n// Now, project these into a format suitable for tiles\r\nbyteData\r\n| project Metric = \"Total Sent Bytes\", Value = TotalSent\r\n| union (\r\n    byteData\r\n    | project Metric = \"Total Received Bytes\", Value = TotalReceived\r\n)",
-        "size": 0,
+        "size": 4,
         "title": "Data Transmission for {DisplayIPType}={IPValue}, by DeviceAction={DeviceAction_}",
         "timeContextFromParameter": "TimeRange",
         "queryType": 0,
@@ -365,7 +365,98 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let selectedDeviceAction = tostring(\"{DeviceAction_}\");\r\nlet selectedDestinationIP = tostring(\"{Destination_IP}\");\r\nlet Source_IP_value = tostring(\"{Source_IP}\");\r\nCommonSecurityLog\r\n| where (selectedDeviceAction == \"All\" or DeviceAction in ({DeviceAction_}))\r\n| where DestinationIP has_any (selectedDestinationIP)\r\n| where SourceIP has_any (Source_IP_value)\r\n| project TimeGenerated, iif(isnotempty(Source_IP_value), SourceIP, DestinationIP), ReceivedBytes, SentBytes",
+        "query": "let selectedDeviceAction = tostring(\"{DeviceAction_}\");\r\nlet selectedDestinationIP = tostring(\"{Destination_IP}\");\r\nlet Source_IP_value = tostring(\"{Source_IP}\");\r\nlet byteData = CommonSecurityLog\r\n//CommonSecurityLog\r\n| where (selectedDeviceAction == \"All\" or DeviceAction in ({DeviceAction_}))\r\n| where DestinationIP has_any (selectedDestinationIP)\r\n| where SourceIP has_any (Source_IP_value)\r\n| extend NetworkType = case(\r\n    ipv4_is_private(DestinationIP), 'Internal Network (RFC 1918)',\r\n    'Public Network' // Covers public IPs\r\n    )\r\n| project PublicNetwork=iif(NetworkType==\"Public Network\", 1, 0), InternalNetwork=iif(NetworkType==\"Internal Network (RFC 1918)\", 1, 0)\r\n| summarize TotalPublic=sum(PublicNetwork), TotalInternal=sum(InternalNetwork);\r\n// Project into a format suitable for tiles\r\nbyteData\r\n| project Metric = \"Total Public Network Requests\", Value = TotalPublic\r\n| union (\r\n    byteData\r\n    | project Metric = \"Total Internal Network Requests\", Value = TotalInternal\r\n)",
+        "size": 4,
+        "title": "Connnection Requests from {DisplayIPType}={IPValue}, by DeviceAction={DeviceAction_}",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "tiles",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "Count",
+              "formatter": 3,
+              "formatOptions": {
+                "palette": "blueDark",
+                "showIcon": true
+              }
+            },
+            {
+              "columnMatch": "Trend",
+              "formatter": 9,
+              "formatOptions": {
+                "palette": "blueDark",
+                "showIcon": true
+              }
+            },
+            {
+              "columnMatch": "jkey",
+              "formatter": 5,
+              "formatOptions": {
+                "showIcon": true
+              }
+            },
+            {
+              "columnMatch": "TimeGenerated",
+              "formatter": 5,
+              "formatOptions": {
+                "showIcon": true
+              }
+            },
+            {
+              "columnMatch": "jkey1",
+              "formatter": 5,
+              "formatOptions": {
+                "showIcon": true
+              }
+            },
+            {
+              "columnMatch": "DeviceActions",
+              "formatter": 5,
+              "formatOptions": {
+                "showIcon": true
+              }
+            }
+          ]
+        },
+        "tileSettings": {
+          "titleContent": {
+            "columnMatch": "Metric",
+            "formatter": 1
+          },
+          "leftContent": {
+            "columnMatch": "Value",
+            "formatter": 12,
+            "formatOptions": {
+              "palette": "blue"
+            },
+            "numberFormat": {
+              "unit": 17,
+              "options": {
+                "style": "decimal",
+                "maximumFractionDigits": 2,
+                "maximumSignificantDigits": 3
+              }
+            }
+          },
+          "showBorder": false,
+          "sortCriteriaField": "Metric",
+          "sortOrderField": 2,
+          "size": "auto"
+        }
+      },
+      "customWidth": "50",
+      "name": "Traffic activity summary - Copy",
+      "styleSettings": {
+        "margin": "0px"
+      }
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let selectedDeviceAction = tostring(\"{DeviceAction_}\");\r\nlet selectedDestinationIP = tostring(\"{Destination_IP}\");\r\nlet Source_IP_value = tostring(\"{Source_IP}\");\r\nCommonSecurityLog\r\n| where (selectedDeviceAction == \"All\" or DeviceAction in ({DeviceAction_}))\r\n| where DestinationIP has_any (selectedDestinationIP)\r\n| where SourceIP has_any (Source_IP_value)\r\n| project TimeGenerated, iif(isnotempty(Source_IP_value), SourceIP, DestinationIP), ReceivedBytes, SentBytes, DeviceAction",
         "size": 0,
         "title": "Data Transmission for for {DisplayIPType}={IPValue}, by time range {TimeRange}",
         "timeContextFromParameter": "TimeRange",
@@ -374,6 +465,10 @@
         "visualization": "linechart",
         "chartSettings": {
           "xAxis": "TimeGenerated",
+          "yAxis": [
+            "ReceivedBytes",
+            "SentBytes"
+          ],
           "seriesLabelSettings": [
             {
               "seriesName": "ReceivedBytes",
@@ -393,11 +488,17 @@
             "label": "Event Time"
           },
           "ySettings": {
+            "numberFormatSettings": {
+              "unit": 36,
+              "options": {
+                "style": "decimal",
+                "useGrouping": true
+              }
+            },
             "label": "Received Data Volume"
           }
         }
       },
-      "customWidth": "50",
       "name": "Traffic activity by time"
     }
   ],
