@@ -12,14 +12,12 @@
       "type": 9,
       "content": {
         "version": "KqlParameterItem/1.0",
-        "crossComponentResources": [
-          ""
-        ],
+        "crossComponentResources": [""],
         "parameters": [
           {
             "id": "7d0ab0d4-beba-4767-b740-793e35131fcf",
             "version": "KqlParameterItem/1.0",
-            "name": "AccountUPN",
+            "name": "UserPrincipalName",
             "label": "Enter User Principal Name",
             "type": 1,
             "isRequired": true,
@@ -40,13 +38,15 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let UserInput = \"{AccountUPN}\";\nIdentityInfo\n| extend UserPrincipalName = AccountUPN\n| extend UserDisplayName = AccountDisplayName\n| where UserPrincipalName contains UserInput\n| summarize by UserDisplayName, UserPrincipalName, IsAccountEnabled, MailAddress, Manager, Department, JobTitle, AccountCreationTime\n| sort by UserDisplayName asc",
+        "query": "let UserInput = \"{UserPrincipalName}\";\nIdentityInfo\n| extend UserPrincipalName = AccountUPN\n| extend UserDisplayName = AccountDisplayName\n| where UserPrincipalName contains UserInput\n| summarize LatestTimeGenerated = max(TimeGenerated) by UserDisplayName, UserPrincipalName, IsAccountEnabled, MailAddress, Manager, Department, JobTitle, AccountCreationTime, SAMAccountName\n| sort by LatestTimeGenerated ",
         "size": 4,
+        "showAnalytics": true,
         "timeContext": {
           "durationMs": 2592000000
         },
         "exportFieldName": "UserPrincipalName",
         "exportParameterName": "UserPrincipalName",
+        "showExportToExcel": true,
         "queryType": 0,
         "resourceType": "microsoft.operationalinsights/workspaces",
         "gridSettings": {
@@ -64,7 +64,7 @@
           }
         ]
       },
-      "name": "query - 2"
+      "name": "IdentityInfo"
     },
     {
       "type": 11,
@@ -132,6 +132,9 @@
         },
         "queryType": 0,
         "resourceType": "microsoft.operationalinsights/workspaces",
+        "gridSettings": {
+          "filter": true
+        },
         "sortBy": [],
         "tileSettings": {
           "showBorder": false
@@ -293,7 +296,9 @@
       "content": {
         "version": "KqlParameterItem/1.0",
         "crossComponentResources": [
-          ""
+          "/subscriptions/a0e781d5-00c3-4a14-9f3e-28e2432020f4/resourcegroups/rg-syd-prod-sentinel/providers/microsoft.operationalinsights/workspaces/law-syd-prod-sentinel",
+          "/subscriptions/a0e781d5-00c3-4a14-9f3e-28e2432020f4",
+          "/subscriptions/d9921b62-ab86-41ae-9470-0cb85f82a003"
         ],
         "parameters": [
           {
@@ -467,7 +472,7 @@
         "query": "let UserPrincipalName_ = \"{UserPrincipalName}\";\r\nSigninLogs\r\n| where UserPrincipalName =~ UserPrincipalName_\r\n| extend DeviceBrowser = tostring(DeviceDetail.browser)\r\n| extend DeviceId = tostring(DeviceDetail.deviceId)\r\n| extend DeviceDisplayName = parse_json(DeviceDetail).displayName\r\n| extend DeviceOperatingSystem = parse_json(DeviceDetail).operatingSystem\r\n| extend DeviceTrustType = tostring(DeviceDetail.trustType)\r\n| extend DeviceIsManaged = tostring(DeviceDetail.isManaged)\r\n| extend City = tostring(LocationDetails.city)\r\n| extend CountryOrRegion = tostring(LocationDetails.countryOrRegion)\r\n| extend State = tostring(LocationDetails.state)\r\n| extend StatusAdditionalDetails = tostring(Status.additionalDetails)\r\n| extend StatusFailureReason = tostring(Status.failureReason)\r\n| project TimeGenerated,ResultType,StatusFailureReason,DeviceDisplayName,DeviceOperatingSystem,DeviceBrowser,Location,City,State,AppDisplayName,IPAddress\r\n| sort by TimeGenerated desc",
         "size": 1,
         "showAnalytics": true,
-        "title": "Interactive Sign-in Activity for {UserPrincipalName} in {TimeRange}",
+        "title": "Interactive Sign-in Activity for {UserPrincipalName} in {TimeRange:ago}",
         "noDataMessage": "No Results for Selected User",
         "noDataMessageStyle": 3,
         "timeContextFromParameter": "TimeRange",
@@ -601,7 +606,7 @@
         "query": "let UserPrincipalName_ = \"{UserPrincipalName}\";\r\nAADNonInteractiveUserSignInLogs\r\n| where UserPrincipalName =~ UserPrincipalName_\r\n| extend DeviceBrowser = parse_json(DeviceDetail).browser\r\n| extend DeviceDisplayName = parse_json(DeviceDetail).displayName\r\n| extend DeviceOperatingSystem = parse_json(DeviceDetail).operatingSystem\r\n| extend City = parse_json(LocationDetails).city\r\n| extend CountryOrRegion = parse_json(LocationDetails).countryOrRegion\r\n| extend State = parse_json(LocationDetails).state\r\n| extend StatusAdditionalDetails = parse_json(Status).additionalDetails\r\n| extend StatusFailureReason = parse_json(Status).failureReason\r\n| project TimeGenerated,ResultType,StatusFailureReason,DeviceDisplayName,DeviceOperatingSystem,DeviceBrowser,Location,City,State,AppDisplayName,IPAddress\r\n| sort by TimeGenerated desc",
         "size": 0,
         "showAnalytics": true,
-        "title": "Non-Interactive Sign-in Activity for {UserPrincipalName} in {TimeRange}",
+        "title": "Non-Interactive Sign-in Activity for {UserPrincipalName} in {TimeRange:ago}",
         "noDataMessage": "No Results for Selected User",
         "noDataMessageStyle": 3,
         "timeContextFromParameter": "TimeRange",
@@ -753,7 +758,7 @@
         "version": "KqlItem/1.0",
         "query": "let UPN = \"{UserPrincipalName}\";\r\nBehaviorAnalytics\r\n| where UserPrincipalName =~ UPN\r\n| extend AccountDomain_ = tostring(UsersInsights.AccountDomain)\r\n| extend AccountObjectID_ = tostring(UsersInsights.AccountObjectID)\r\n| extend OnPremisesSID_ = tostring(UsersInsights.OnPremisesSID)\r\n| extend App_ = tostring(ActivityInsights.App)\r\n| extend Resource_ = tostring(ActivityInsights.Resource)\r\n| project TimeGenerated,ActivityType,ActionType,UserName,InvestigationPriority,SourceIPAddress,SourceIPLocation,SourceDevice,AccountDomain_,App_",
         "size": 0,
-        "title": "Behaviour Analysis for {UserPrincipalName} in {TimeRange}",
+        "title": "Behaviour Analysis for {UserPrincipalName} in {TimeRange:ago}",
         "noDataMessage": "No Results for Selected User",
         "noDataMessageStyle": 3,
         "timeContextFromParameter": "TimeRange",
@@ -896,7 +901,9 @@
       "content": {
         "version": "KqlParameterItem/1.0",
         "crossComponentResources": [
-          ""
+          "/subscriptions/a0e781d5-00c3-4a14-9f3e-28e2432020f4/resourcegroups/rg-syd-prod-sentinel/providers/microsoft.operationalinsights/workspaces/law-syd-prod-sentinel",
+          "/subscriptions/a0e781d5-00c3-4a14-9f3e-28e2432020f4",
+          "/subscriptions/d9921b62-ab86-41ae-9470-0cb85f82a003"
         ],
         "parameters": [
           {
@@ -1100,9 +1107,7 @@
       "name": "links - 25 - Copy - Copy"
     }
   ],
-  "fallbackResourceIds": [
-    ""
-  ],
+  "fallbackResourceIds": [""],
   "fromTemplateId": "sentinel-UserWorkbook",
   "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
 }
