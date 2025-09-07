@@ -413,7 +413,7 @@ class Runner:
             if outfile:
                 out_path = Path(outfile)
             else:
-                base = _sanitize_filename(title)
+                base = _sanitize_filename(vtitle)
                 out_path = Path(f"{base}.{output.lower()}")
             _export_results(cols, rows, output, out_path)
 
