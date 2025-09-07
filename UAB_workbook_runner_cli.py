@@ -4,14 +4,14 @@ Sentinel Workbook KQL Runner (Azure Log Analytics via REST + AZ CLI auth)
 
 - Reads a Sentinel workbook JSON, selects a query by index, substitutes placeholders,
   and executes the KQL against your Log Analytics workspace using the provided
-  azure_monitor_logs_run_query module (REST API + az CLI token).
+  azure_monitor_cli module (REST API + az CLI token).
 
 Requirements:
   pip install fire requests
 
 Notes:
 - AZ CLI must be installed and logged in (e.g., `az account show` works).
-- The user's token acquisition path is handled by `azure_monitor_logs_run_query`.
+- The user's token acquisition path is handled by `azure_monitor_cli`.
 - Placeholders like {UserPrincipalName}, {AccountUPN}, etc. are replaced with CLI kwargs.
 - {Operation} can be "value::all" (treat as All) OR a comma list like "A,B,C".
 - You can export results via --output csv/json and --outfile path.
@@ -24,10 +24,10 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # External dependency provided by the user
-import azure_monitor_logs_run_query  # noqa: F401
+import azure_monitor_cli  # noqa: F401
 
 # supress warnings from requests about unverified HTTPS requests
 import warnings
@@ -398,9 +398,9 @@ class Runner:
 
         # Run the query
         try:
-            table = azure_monitor_logs_run_query._query_log_analytics(workspace_id, rendered, timespan, verify_tls=False)
+            table = azure_monitor_cli._query_log_analytics(workspace_id, rendered, timespan, verify_tls=False)
         except Exception as e:
-            print("Failed to execute query via azure_monitor_logs_run_query._query_log_analytics()", file=sys.stderr)
+            print("Failed to execute query via azure_monitor_cli._query_log_analytics()", file=sys.stderr)
             raise
 
         cols, rows = _coerce_table(table)
@@ -425,6 +425,6 @@ if __name__ == "__main__":
     fire.Fire(Runner)
 
 # -------------------------- Example usage --------------------------
-#   python sentinel_workbook_runner.py run <index> <workspace_ID> P1D --UserPrincipalName <UPN> --limit 5
-#   python sentinel_workbook_runner.py list
-#   python sentinel_workbook_runner.py run <id> P1D --UserPrincipalName <UPN> --Operation <Operation> --limit 10
+#   python UAB_workbook_runner_cli.py run <index> <workspace_ID> P1D --UserPrincipalName <UPN> --limit 5
+#   python UAB_workbook_runner_cli.py list
+#   python UAB_workbook_runner_cli.py run <id> P1D --UserPrincipalName <UPN> --Operation <Operation> --limit 10
