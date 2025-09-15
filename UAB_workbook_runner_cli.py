@@ -24,7 +24,9 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+import ast
+from typing import Any, Dict, List, Optional, Tuple, Union
+import html  # for HTML-escaping
 
 # External dependency provided by the user
 import azure_monitor_cli  # noqa: F401
@@ -45,12 +47,43 @@ def _sanitize_filename(name: str) -> str:
     name = name.strip().replace(" ", "_")
     return re.sub(r"[^-_.A-Za-z0-9]+", "", name) or "query"
 
-def _coerce_operations(value: Optional[str]) -> Dict[str, Any]:
-    if not value:
+def _coerce_operations(value: Optional[Union[str, List[Any], tuple]]) -> Dict[str, Any]:
+    """
+    Accepts:
+      - None / "" / "value::all" / "all" / "any" / "*"
+      - CSV string: "A,B,C"
+      - List/tuple: ["A","B","C"] or (..)
+      - Stringified list: "[A,B,C]" or "['A','B','C']" (we'll try to parse)
+    Returns: {"operations_all": bool, "ops": [str, ...]}
+    """
+    # Empty → treat as All
+    if value is None or (isinstance(value, str) and not value.strip()):
         return {"operations_all": True, "ops": []}
+
+    # If a real list/tuple was passed (Fire can do this if you typed [A,B,C])
+    if isinstance(value, (list, tuple)):
+        ops = [str(o).strip() for o in value if str(o).strip()]
+        return {"operations_all": False, "ops": ops}
+
+    # From here, value is a string
     v = value.strip()
+
+    # Handle ALL tokens
     if v.lower() in ("value::all", "all", "any", "*"):
         return {"operations_all": True, "ops": []}
+
+    # If looks like a list, try to parse Python literal or JSON
+    if v.startswith("[") and v.endswith("]"):
+        try:
+            parsed = ast.literal_eval(v)  # safer than eval
+            if isinstance(parsed, (list, tuple)):
+                ops = [str(o).strip() for o in parsed if str(o).strip()]
+                return {"operations_all": False, "ops": ops}
+        except Exception:
+            # fall back to CSV below
+            pass
+
+    # Fallback: CSV string
     ops = [o.strip() for o in v.split(",") if o.strip()]
     return {"operations_all": False, "ops": ops}
 
@@ -301,31 +334,138 @@ def _print_table(cols: List[Dict[str, Any]], rows: List[List[Any]], limit: Optio
     print(header)
     print(sep)
 
+    # Check if ResultType column exists
+    try:
+        result_idx = col_names.index("ResultType")
+    except ValueError:
+        result_idx = None
+
+    # ANSI background highlight codes
+    GREEN_BG = "\033[42m"
+    RED_BG = "\033[41m"
+    RESET = "\033[0m"
+
     # Rows
     for row in data:
-        line = " | ".join(str(cell)[:widths[i]].ljust(widths[i]) for i, cell in enumerate(row))
+        row_strs = [str(cell)[:widths[i]].ljust(widths[i]) for i, cell in enumerate(row)]
+        line = " | ".join(row_strs)
+
+        if result_idx is not None:
+            if str(row[result_idx]) == "0":
+                line = f"{GREEN_BG}{line}{RESET}"
+            else:
+                line = f"{RED_BG}{line}{RESET}"
+
         print(line)
 
     if limit and len(rows) > limit:
         print(f"\n... {len(rows) - limit} more rows omitted (use --limit to adjust).")
 
-def _export_results(cols: List[Dict[str, Any]], rows: List[List[Any]], fmt: str, outfile: Path) -> None:
+
+def _export_results(cols: List[Dict[str, Any]], rows: List[List[Any]], fmt: str, outfile: Path, vtitle: str, limit: Optional[int] = None) -> None:
     outfile.parent.mkdir(parents=True, exist_ok=True)
     col_names = [c.get("name", f"col{i}") for i, c in enumerate(cols)]
 
-    if fmt.lower() == "csv":
+    fmt_lower = fmt.lower()
+    if fmt_lower == "csv":
         with outfile.open("w", encoding="utf-8", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(col_names)
-            writer.writerows(rows)
-    elif fmt.lower() == "json":
+            if limit:
+                writer.writerows(rows[:limit])
+            else:
+                writer.writerows(rows)
+    elif fmt_lower == "json":
         as_dicts = [dict(zip(col_names, r)) for r in rows]
         with outfile.open("w", encoding="utf-8") as f:
-            json.dump(as_dicts, f, ensure_ascii=False, indent=2)
+            if limit:
+                json.dump(as_dicts[:limit], f, ensure_ascii=False, indent=2)
+            else:
+                json.dump(as_dicts, f, ensure_ascii=False, indent=2)
+    elif fmt_lower == "html":
+        # Use the same console sizing rules and add <pre> wrapper + row highlighting
+        html_body = _render_pre_html(cols, rows, limit=limit)  # export all rows
+        # Minimal HTML shell so you can open directly in a browser
+        html_doc = f"""
+                    <p>{vtitle}:</p>
+                    {html_body}
+                    """
+        with outfile.open("w", encoding="utf-8") as f:
+            f.write(html_doc)
+            # Copy html_doc to clipboard if on Windows
+            if sys.platform == "win32":
+                try:
+                    import subprocess
+                    subprocess.run("clip", universal_newlines=True, input=html_doc)
+                    print("(HTML content copied to clipboard)")
+                except Exception:
+                    pass
     else:
-        raise ValueError("Unsupported output format. Use csv or json.")
+        raise ValueError("Unsupported output format. Use csv, json, or html.")
 
     print(f"Saved results to: {outfile}")
+
+
+def _render_pre_html(cols: List[Dict[str, Any]], rows: List[List[Any]], limit: Optional[int] = None) -> str:
+    """
+    Render a fixed-width table (header + separator + rows) inside <pre>…</pre>,
+    highlighting each row by ResultType (0=green, other=red).
+    """
+    if not cols:
+        return "<pre>No data returned.</pre>"
+
+    # Column names & data (respect limit)
+    col_names = [c.get("name", f"col{i}") for i, c in enumerate(cols)]
+    data = rows[: (limit or len(rows))]
+
+    # Compute widths (soft cap at 60 chars) exactly like _print_table
+    max_width = 60
+    widths = [min(len(name), max_width) for name in col_names]
+    for row in data:
+        for i, cell in enumerate(row):
+            text = str(cell)
+            widths[i] = min(max(widths[i], len(text)), max_width)
+
+    # Build header + separator (escaped)
+    header = " | ".join(name.ljust(widths[i]) for i, name in enumerate(col_names))
+    sep = "-+-".join("-" * widths[i] for i in range(len(widths)))
+
+    # Find ResultType column (if present)
+    try:
+        result_idx = col_names.index("ResultType")
+    except ValueError:
+        result_idx = None
+
+    # Colors (backgrounds) — tweak if you prefer different shades
+    GREEN_BG = "background-color:#169179;"  # soft green
+    RED_BG   = "background-color:#ba372a;"  # soft red
+    RESET    = ""  # Not needed for HTML; kept for symmetry
+
+    # Compose lines
+    lines: List[str] = []
+    # header + separator should not be colored; HTML-escape them
+    lines.append(html.escape(header))
+    lines.append(html.escape(sep))
+
+    for row in data:
+        row_strs = [str(cell)[:widths[i]].ljust(widths[i]) for i, cell in enumerate(row)]
+        line = " | ".join(row_strs)
+        escaped_line = html.escape(line)
+
+        style = ""
+        if result_idx is not None:
+            style = GREEN_BG if str(row[result_idx]) == "0" else RED_BG
+
+        if style:
+            lines.append(f'<span style="{style}">{escaped_line}</span>')
+        else:
+            lines.append(escaped_line)
+
+    # # Footer note if truncated
+    # if limit and len(rows) > limit:
+    #     lines.append(html.escape(f"\n... {len(rows) - limit} more rows omitted (use --limit to adjust)."))
+
+    return "<pre>\n" + "\n".join(lines) + "\n</pre>"
 
 # --------------------------
 # CLI
@@ -348,8 +488,9 @@ class Runner:
         index: int,
         workspace_id: str,
         timespan: str,
+        tenant_id: Optional[str] = None,          # if not default
         workbook_path: str = "User_Analytics_Behaviour.json",
-        output: Optional[str] = None,               # csv|json
+        output: Optional[str] = None,               # csv|json|html
         outfile: Optional[str] = None,              # path for export
         limit: Optional[int] = 200,                 # preview row limit for console
         save_rendered_kql: bool = False,            # save rendered KQL to file
@@ -362,9 +503,10 @@ class Runner:
         Args:
           index: 1-based index of the query from `list`
           workspace_id: Log Analytics Workspace ID (GUID)
+          tenant_id: Azure AD tenant ID (GUID) if not default
           timespan: ISO8601 duration (e.g., P1D) or absolute range(s)
           workbook_path: path to the Sentinel workbook JSON
-          output: csv or json to export results
+          output: csv, json or html to export results
           outfile: path to write exported file
           limit: max rows printed to console (export always writes all rows)
           save_rendered_kql: write the rendered KQL to a .kql file
@@ -398,7 +540,7 @@ class Runner:
 
         # Run the query
         try:
-            table = azure_monitor_cli._query_log_analytics(workspace_id, rendered, timespan, verify_tls=False)
+            table = azure_monitor_cli._query_log_analytics(workspace_id=workspace_id, tenant_id=tenant_id, query=rendered, timespan=timespan, verify_tls=False)
         except Exception as e:
             print("Failed to execute query via azure_monitor_cli._query_log_analytics()", file=sys.stderr)
             raise
@@ -415,7 +557,7 @@ class Runner:
             else:
                 base = _sanitize_filename(vtitle)
                 out_path = Path(f"{base}.{output.lower()}")
-            _export_results(cols, rows, output, out_path)
+            _export_results(cols, rows, output, out_path, vtitle=vtitle, limit=limit)
 
 if __name__ == "__main__":
     try:
