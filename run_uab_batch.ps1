@@ -7,10 +7,8 @@ param(
 
 # UPNs to run
 $UPNs = @(      # Separate multiple with commas
-  "maja.pavlovski@qr.com.au",
-  "roshan.dhakal@qr.com.au",
-  "xiyi.duan@qr.com.au",
-  "kosto.pavlovski@qr.com.au"
+  "myuser@corp.com",
+  "myuser2@corp.com"
 )
 
 # Create a fresh HTML shell
