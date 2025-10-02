@@ -371,7 +371,7 @@ def _export_results(cols: List[Dict[str, Any]], rows: List[List[Any]], fmt: str,
         with outfile.open("w", encoding="utf-8", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(col_names)
-            if limit:
+            if limit != 200:
                 writer.writerows(rows[:limit])
             else:
                 writer.writerows(rows)
@@ -486,8 +486,8 @@ class Runner:
     def run(
         self,
         index: int,
-        workspace_id: str,
         timespan: str,
+        workspace_id: Optional[str] = None, # Log Analytics Workspace ID (GUID)
         tenant_id: Optional[str] = None,          # if not default
         workbook_path: str = "User_Analytics_Behaviour.json",
         output: Optional[str] = None,               # csv|json|html
@@ -540,6 +540,9 @@ class Runner:
 
         # Run the query
         try:
+            if workspace_id is None:
+                print("No workspace ID provided; launching interactive selector...")
+                workspace_id, tenant_id = azure_monitor_cli.azure_monitor_login(tenant_id=tenant_id)
             table = azure_monitor_cli._query_log_analytics(workspace_id=workspace_id, tenant_id=tenant_id, query=rendered, timespan=timespan, verify_tls=False)
         except Exception as e:
             print("Failed to execute query via azure_monitor_cli._query_log_analytics()", file=sys.stderr)
