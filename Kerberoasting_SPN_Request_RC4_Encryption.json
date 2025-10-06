@@ -1,0 +1,442 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "# Kerberoasting SPN Request with RC4 Encryption"
+      },
+      "name": "Heading 1"
+    },
+    {
+      "type": 11,
+      "content": {
+        "version": "LinkItem/1.0",
+        "style": "tabs",
+        "links": [
+          {
+            "id": "6df67434-5451-4346-9601-e8a54e59e924",
+            "cellValue": "selectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Incidents",
+            "subTarget": "incidents",
+            "style": "link"
+          },
+          {
+            "id": "684be069-92f0-4522-86e9-4f1171b38ff9",
+            "cellValue": "selectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Find all RC4 / Kerberos TGS requests for SPNs / accounts (last 24hs)",
+            "subTarget": "TH1",
+            "style": "link"
+          },
+          {
+            "id": "d9db2cdd-f3d6-43c3-b80a-d43b90646e6d",
+            "cellValue": "selectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Volume by requester (quick pattern check)",
+            "subTarget": "TH2",
+            "style": "link"
+          },
+          {
+            "id": "aaf8e60a-3ae4-44c0-994c-8336b954ec03",
+            "cellValue": "selectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Process creation on requester hosts around event times (+/-10 minutes)",
+            "subTarget": "TH3",
+            "style": "link"
+          }
+        ]
+      },
+      "name": "links - 11"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "SecurityIncident\r\n| where Title =~ \"Kerberoasting SPN Request with RC4 encryption\"\r\n| mv-expand AlertIds to typeof(string)\r\n| join \r\n(\r\n    SecurityAlert\r\n) on $left.AlertIds == $right.SystemAlertId\r\n| extend \r\n        QueryStartTimeUTC = parse_json(ExtendedProperties)['Query Start Time UTC'], \r\n        QueryEndTimeUTC = parse_json(ExtendedProperties)['Query End Time UTC'], \r\n        Query = parse_json(ExtendedProperties)['Query']\r\n| project TimeGenerated, IncidentNumber, Severity, Status,Owner=tostring(Owner.assignedTo), DisplayName, Tactics, Techniques, IncidentUrl, Events=todynamic(ExtendedProperties)[\"Search Query Results Overall Count\"], QueryStartTimeUTC, QueryEndTimeUTC, Query",
+        "size": 1,
+        "title": "Kerberoasting SPN Request with RC4 Encryption Incidents",
+        "timeContext": {
+          "durationMs": 604800000
+        },
+        "exportedParameters": [
+          {
+            "fieldName": "IncidentNumber",
+            "parameterName": "INexport",
+            "parameterType": 1,
+            "defaultValue": "None"
+          },
+          {
+            "fieldName": "QueryEndTimeUTC",
+            "parameterName": "QueryEndTimeUTC",
+            "parameterType": 1
+          }
+        ],
+        "showExportToExcel": true,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "TimeGenerated",
+              "formatter": 1,
+              "dateFormat": {
+                "formatName": "monthDayPattern"
+              }
+            },
+            {
+              "columnMatch": "Severity",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "icons",
+                "thresholdsGrid": [
+                  {
+                    "operator": "==",
+                    "thresholdValue": "High",
+                    "representation": "3",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Medium",
+                    "representation": "2",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Low",
+                    "representation": "down",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Informational",
+                    "representation": "info",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "representation": "unknown",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "Status",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": "==",
+                    "thresholdValue": "New",
+                    "representation": "gray",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Active",
+                    "representation": "green",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "representation": "blue",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "Owner",
+              "formatter": 0,
+              "formatOptions": {
+                "customColumnWidthSetting": "25ch"
+              }
+            },
+            {
+              "columnMatch": "IncidentUrl",
+              "formatter": 7,
+              "formatOptions": {
+                "linkTarget": "Url",
+                "linkLabel": "Open Incident in the Azure Sentinel Portal"
+              }
+            },
+            {
+              "columnMatch": "AlertCount",
+              "formatter": 0,
+              "formatOptions": {
+                "aggregation": "Sum"
+              }
+            },
+            {
+              "columnMatch": "Alerts",
+              "formatter": 5
+            },
+            {
+              "columnMatch": "Entities",
+              "formatter": 1
+            },
+            {
+              "columnMatch": "alertCount",
+              "formatter": 8,
+              "formatOptions": {
+                "min": 0,
+                "palette": "redBright"
+              }
+            },
+            {
+              "columnMatch": "count_AlertCount",
+              "formatter": 8,
+              "formatOptions": {
+                "palette": "greenRed"
+              }
+            }
+          ],
+          "rowLimit": 500,
+          "filter": true,
+          "sortBy": [
+            {
+              "itemKey": "IncidentNumber",
+              "sortOrder": 1
+            }
+          ]
+        },
+        "sortBy": [
+          {
+            "itemKey": "IncidentNumber",
+            "sortOrder": 1
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "incidents"
+      },
+      "name": "IncidentDetailsView"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "// The query_now parameter represents the time (in UTC) at which the scheduled analytics rule ran to produce this alert.\r\nset query_now = datetime({QueryEndTimeUTC});\r\n//Kerberoasting SPN Request with RC4 encryption - Can be enabled in QR\r\nSecurityEvent\r\n| where EventID == 4769\r\n| extend Ticket_Options = extract(\"TicketOptions\\\">(.+)<\", 1, EventData)\r\n| extend Ticket_Encryption_Type = extract(\"TicketEncryptionType\\\">(.+)<\", 1, EventData)\r\n| extend ServiceName = extract(\"ServiceName\\\">(.+)<\", 1, EventData)\r\n| where Ticket_Encryption_Type == \"0x17\" and (Ticket_Options == \"0x40810000\" or Ticket_Options == \"0x40800000\" or Ticket_Options == \"0x40810010\")\r\n| extend AccountName = extract(\"TargetUserName\\\">(.+)<\", 1, EventData)\r\n| extend TargetDomainName = extract(\"TargetDomainName\\\">(.+)<\", 1, EventData)\r\n| extend ServiceSid = extract(\"ServiceSid\\\">(.+)<\", 1, EventData)\r\n| extend TargetUserName = array_slice(split(AccountName,\"@\"),0,0)\r\n| where not(TargetUserName matches regex \".+//$\")\r\n| extend IpAddress = extract(\"IpAddress\\\">(.+)<\", 1, EventData)\r\n| extend IpAddress = replace_string(IpAddress,\"::ffff:\", \"\")\r\n| summarize Count = dcount(ServiceName), EarliestTime = arg_min(TimeGenerated,*), LatestTime = arg_max(TimeGenerated,*), IPAddress = make_set(IpAddress), Service = make_set(ServiceName), ServiceID = make_set(ServiceSid), TicketEncryptionType = make_set(Ticket_Encryption_Type), TicketOptions = make_set(Ticket_Options), Target_Domain_Name = make_set(TargetDomainName), Target_User_Name = make_set(TargetUserName) by AccountName //Account_Name\r\n| project EarliestTime, LatestTime, AccountName, Computer, Count, IPAddress, Service, ServiceID, TicketOptions, Target_Domain_Name, Target_User_Name\r\n\r\n",
+        "size": 1,
+        "showAnalytics": true,
+        "exportFieldName": "AccountName",
+        "exportParameterName": "Acnt",
+        "exportDefaultValue": "\"\"",
+        "showExportToExcel": true,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "Accounts",
+              "formatter": 1
+            },
+            {
+              "columnMatch": "AccountName",
+              "formatter": 1
+            }
+          ]
+        }
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "incidents"
+      },
+      "name": "query - 2"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Find all RC4 / Kerberos TGS requests for SPNs / accounts (last 24hs)"
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "TH1"
+      },
+      "name": "text - 5"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "479ce0c3-d966-411b-9127-bcd7e89a9217",
+            "version": "KqlParameterItem/1.0",
+            "name": "SPN",
+            "type": 2,
+            "isRequired": true,
+            "multiSelect": true,
+            "quote": "\"",
+            "delimiter": ",",
+            "query": "// The query_now parameter represents the time (in UTC) at which the scheduled analytics rule ran to produce this alert.\r\nset query_now = datetime({QueryEndTimeUTC});\r\n//Kerberoasting SPN Request with RC4 encryption - Can be enabled in QR\r\nSecurityEvent\r\n| where EventID == 4769\r\n| extend Raw = tostring(EventData)\r\n| extend Ticket_Options = extract(\"TicketOptions\\\">(.+)<\", 1, Raw),\r\n         Ticket_Encryption_Type = extract(\"TicketEncryptionType\\\">(.+)<\", 1, Raw),\r\n         AccountName = extract(\"TargetUserName\\\">(.+)<\", 1, Raw)\r\n| where Ticket_Encryption_Type == \"0x17\"\r\n  and Ticket_Options in (\"0x40810000\",\"0x40800000\",\"0x40810010\")\r\n| extend TargetUser = tostring(split(AccountName, \"@\")[0])\r\n| where not(TargetUserName matches regex \".+//$\")\r\n| summarize by TargetUser",
+            "typeSettings": {
+              "additionalResourceOptions": [
+                "value::all"
+              ],
+              "showDefault": false
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "value": [
+              "value::all"
+            ]
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "TH1"
+      },
+      "name": "parameters - 5"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "SecurityEvent\r\n| where EventID == 4769\r\n| extend SPN = extract(\"ServiceName\\\">(.+)<\", 1, EventData), EType = extract(\"TicketEncryptionType\\\">(.+)<\", 1, EventData)\r\n| where SPN in ({SPN})\r\n| project TimeGenerated, Computer, Account = AccountName, IpAddress, SPN, EType, TicketOptions = extract(\"TicketOptions\\\">(.+)<\", 1, EventData)\r\n| sort by TimeGenerated desc",
+        "size": 0,
+        "showAnalytics": true,
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "showExportToExcel": true,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "TH1"
+      },
+      "name": "query - 3"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Volume by requester (quick pattern check)"
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "TH2"
+      },
+      "name": "text - 7"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "SecurityEvent\r\n| where EventID == 4769\r\n| extend SPN = extract(\"ServiceName\\\">(.+)<\", 1, EventData), EType = extract(\"TicketEncryptionType\\\">(.+)<\", 1, EventData)\r\n| where SPN in ({SPN})\r\n| project TimeGenerated, Computer, Account = AccountName, IpAddress, SPN, EType, TicketOptions = extract(\"TicketOptions\\\">(.+)<\", 1, EventData)\r\n| summarize Count = count() by IpAddress, Computer, Account\r\n| sort by Count desc",
+        "size": 1,
+        "showAnalytics": true,
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "showExportToExcel": true,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "TH2"
+      },
+      "name": "query - 3 - Copy"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Process creation on requester hosts around event times (+/-10 minutes)"
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "TH3"
+      },
+      "name": "text - 8"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "e957be87-3dde-4b3c-8f0a-64af36a8be13",
+            "version": "KqlParameterItem/1.0",
+            "name": "Computer",
+            "type": 2,
+            "isRequired": true,
+            "multiSelect": true,
+            "quote": "\"",
+            "delimiter": ",",
+            "query": "// The query_now parameter represents the time (in UTC) at which the scheduled analytics rule ran to produce this alert.\r\nset query_now = datetime({QueryEndTimeUTC});\r\n//Kerberoasting SPN Request with RC4 encryption - Can be enabled in QR\r\nSecurityEvent\r\n| where EventID == 4769\r\n| extend Ticket_Options = extract(\"TicketOptions\\\">(.+)<\", 1, EventData)\r\n| extend Ticket_Encryption_Type = extract(\"TicketEncryptionType\\\">(.+)<\", 1, EventData)\r\n| extend ServiceName = extract(\"ServiceName\\\">(.+)<\", 1, EventData)\r\n| where Ticket_Encryption_Type == \"0x17\" and (Ticket_Options == \"0x40810000\" or Ticket_Options == \"0x40800000\" or Ticket_Options == \"0x40810010\")\r\n| extend AccountName = extract(\"TargetUserName\\\">(.+)<\", 1, EventData)\r\n| extend TargetDomainName = extract(\"TargetDomainName\\\">(.+)<\", 1, EventData)\r\n| extend ServiceSid = extract(\"ServiceSid\\\">(.+)<\", 1, EventData)\r\n| extend TargetUserName = array_slice(split(AccountName,\"@\"),0,0)\r\n| where not(TargetUserName matches regex \".+//$\")\r\n| extend IpAddress = extract(\"IpAddress\\\">(.+)<\", 1, EventData)\r\n| extend IpAddress = replace_string(IpAddress,\"::ffff:\", \"\")\r\n| summarize by Computer\r\n//| project EarliestTime, LatestTime, AccountName, Computer, Count, IPAddress, Service, ServiceID, TicketOptions, Target_Domain_Name, Target_User_Name\r\n\r\n",
+            "typeSettings": {
+              "additionalResourceOptions": [
+                "value::all"
+              ]
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "value": [
+              "value::all"
+            ]
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "TH3"
+      },
+      "name": "parameters - 10"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "SecurityEvent\r\n| where EventID == 4688\r\n| where Computer in ({Computer})\r\n| where TimeGenerated between (datetime(2025-10-06T09:04:00Z) .. datetime(2025-10-06T09:30:00Z))\r\n| summarize Count = count() by NewProcessName, CommandLine, Computer, Account",
+        "size": 0,
+        "showAnalytics": true,
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "showExportToExcel": true,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "TH3"
+      },
+      "name": "query - 9"
+    }
+  ],
+  "fallbackResourceIds": [
+    ""
+  ],
+  "fromTemplateId": "sentinel-UserWorkbook",
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}
