@@ -280,6 +280,28 @@
       }
     },
     {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "AuditLogs\r\n| where Identity contains \"{UserPrincipalName}\" or InitiatedBy.user.userPrincipalName =~ \"{UserPrincipalName}\"\r\n| project TimeGenerated,\r\n          OperationName,\r\n          ActivityDisplayName,\r\n          Category,\r\n          Result,\r\n          AADTenantId,\r\n          TargetResources,\r\n          InitiatedBy,\r\n          AdditionalDetails\r\n| sort by TimeGenerated desc",
+        "size": 0,
+        "showAnalytics": true,
+        "title": "Entra Audit Logs for {UserPrincipalName} in the last 7 days",
+        "timeContext": {
+          "durationMs": 604800000
+        },
+        "showExportToExcel": true,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "Section1"
+      },
+      "name": "auditLogs"
+    },
+    {
       "type": 1,
       "content": {
         "json": "## Section 2: User Sign-in Activity "
